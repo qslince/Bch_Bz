@@ -8,16 +8,16 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False) #create hash
+    hashed_password = Column(String, nullable=False)
 
 class TaxiOrder(Base):
     __tablename__ = "taxi_orders"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Связь с таблицей пользователей
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False) 
     user = relationship("User")
     start_location = Column(String)
     end_location = Column(String)
-    time = Column(String)  # "pending", "completed", etc.
+    time = Column(String) 
 
 class Berth(Base):
     __tablename__ = "berths"

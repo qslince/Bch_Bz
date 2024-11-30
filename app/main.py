@@ -54,7 +54,6 @@ def get_db():
 def get_current_user(request: Request, db: Session = Depends(get_db)):
     user_id = request.session.get("user_id")
     if not user_id:
-        # raise HTTPException(status_code=401, detail="Unauthorized")
         return None
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
@@ -120,8 +119,6 @@ async def login_user(request: Request, db: Session = Depends(get_db), username: 
 
     
     db_user = db.query(models.User).filter(models.User.username == username).first()
-    # print(password)
-    # print(db_user.hashed_password)
     if not db_user or not verify_password(password, db_user.hashed_password):
         return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password"})
     request.session["user_id"] = db_user.id
@@ -184,15 +181,6 @@ async def upload_file(request: Request, file: UploadFile = File(...), db: Sessio
 
         with open(f"uploaded_files/{file.filename}", "wb") as f:
             f.write(file.file.read())
-
-        # with SpooledTemporaryFile() as temp_file:
-        #     temp_file.write(await file.read())  # Запись содержимого файла во временный файл
-        #     temp_file.seek(0)  # Возврат курсора в начало файла
-        #     df = pd.read_excel(temp_file, engine='openpyxl')  # Чте
-        # try:
-        #     df = pd.read_excel(file.file)
-        # except Exception as ex:
-        #     print(ex)
         df = pd.read_excel('uploaded_files/berths.xlsx')
 
 
@@ -208,15 +196,11 @@ async def upload_file(request: Request, file: UploadFile = File(...), db: Sessio
         with open(f"uploaded_files/{file.filename}", "wb") as f:
             f.write(file.file.read())
 
-        # db.add(models.KmzFile(filename=file.filename))
-        # db.commit()
-
         print("good")
         return templates.TemplateResponse("admin.html", {"request": request, "message": f"File {file.filename} uploaded successfully!"})
     except Exception  as ex:
         print(ex)
         return templates.TemplateResponse("admin.html", {"request": request, "error": f"File {file.filename} uploaded failed!"})
-        # raise HTTPException(status_code=500, detail="File upload failed")
 
 
 
