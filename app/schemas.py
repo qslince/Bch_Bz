@@ -19,13 +19,20 @@ class TaxiOrderBase(BaseModel):
     start_location: str
     end_location: str
     user_id: int
+    time: str
 
-class TaxiOrderCreate(TaxiOrderBase):
-    pass
+
 
 class TaxiOrder(TaxiOrderBase):
     id: int
-    status: str  # "pending", "completed", etc.
 
     class Config:
         orm_mode = True
+
+class Berth(BaseModel):
+    docs_id: int
+    name: str
+    address: str
+    river: str
+    latitude: str
+    longitude: str

@@ -1,17 +1,11 @@
-from app import crud, models, schemas
-from passlib.context import CryptContext
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, Depends, status
+import bcrypt
+
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt) 
+    
+    return hashed_password.decode('utf-8')  # Возвращает хэшированный пароль в виде строки
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def register_user(db: Session, username: str, password: str):
-    hashed_password = pwd_context.hash(password)
-    return crud.create_user(db, username=username, hashed_password=hashed_password)
-
-def login_user(db: Session, username: str, password: str):
-    db_user = db.query(models.User).filter(models.User.username == username).first()
-    if db_user and pwd_context.verify(password, db_user.hashed_password):
-        return {"message": "Login successful"}
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
