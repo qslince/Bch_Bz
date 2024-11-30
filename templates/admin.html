@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h2>Admin Panel</h2>
+    <h3>Manage Taxi Orders</h3>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Start Location</th>
+                <th>End Location</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Пример статичных данных. Реализуйте вывод из базы данных -->
+            <tr>
+                <td>1</td>
+                <td>Москва, причал 1</td>
+                <td>Москва, причал 2</td>
+                <td>pending</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Москва, причал 3</td>
+                <td>Москва, причал 4</td>
+                <td>completed</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+    <form action="/admin/upload" method="POST" enctype="multipart/form-data">
+        <label for="file">Upload KMZ File:</label>
+        <input type="file" name="file" required>
+        <button type="submit">Upload</button>
+    </form>
+    <br>
+    <a href="/admin">Reload Admin Panel</a>
+</body>
+</html>

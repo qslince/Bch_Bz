@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order River Taxi</title>
+    <script src="https://api.2gis.ru/v1.0/loader.js"></script>
+    <script>
+        function initMap() {
+            const map = DG.map('map', {
+                center: [55.7558, 37.6173],
+                zoom: 12
+            });
+
+            DG.marker([55.7558, 37.6173]).addTo(map)
+                .bindPopup("Select pick-up and drop-off locations");
+        }
+    </script>
+</head>
+<body>
+    <h2>Order River Taxi</h2>
+    
+    <form action="/order" method="POST">
+        <label for="start_location">Start Location:</label>
+        <input type="text" name="start_location" required><br><br>
+
+        <label for="end_location">End Location:</label>
+        <input type="text" name="end_location" required><br><br>
+
+        <div id="map" style="width: 100%; height: 400px;"></div><br>
+
+        <button type="submit">Order Taxi</button>
+    </form>
+    <br>
+    <a href="/logout">Logout</a>
+</body>
+</html>

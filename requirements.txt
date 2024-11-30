@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+jinja2
+passlib[bcrypt]
+python-dotenv
+aiofiles
+geopy
+pydantic[email]
+2gis
+fastapi-admin
+
