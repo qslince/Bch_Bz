@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+jinja2
+passlib
+python-dotenv
+aiofiles
+fastapi-admin
+pandas
+jose
+datetime
+starlette
+fastkml
+shapely
+elementpath
