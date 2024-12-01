@@ -15,6 +15,12 @@ from jose import JWTError, jwt
 from tempfile import SpooledTemporaryFile
 from datetime import datetime
 from starlette.middleware.sessions import SessionMiddleware
+from fastkml import kml
+from shapely.geometry import mapping, LineString
+from xml.etree import ElementTree as ET
+
+
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -59,6 +65,32 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
+
+
+# def coordinates_list():
+#     file_path = 'data/docs_cords.kml'
+#     tree = ET.parse(file_path)
+#     root = tree.getroot()
+
+#     namespace = {'kml': 'http://www.opengis.net/kml/2.2'}
+#     ET.register_namespace('', namespace['kml'])
+#     coordinates_list = []
+
+#     for placemark in root.findall('.//kml:Placemark', namespace):
+#         for linestring in placemark.findall('.//kml:LineString', namespace):
+#             coordinates_text = linestring.find('.//kml:coordinates', namespace).text.strip()
+
+#             coordinates = [
+#                 tuple(map(float, coord.split(',')))[:2]
+#                 for coord in coordinates_text.split()
+#             ]
+
+#             coordinates_list.extend(coordinates)
+#     return coordinates_list
+
+
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -141,9 +173,9 @@ async def order_page(request: Request, db: Session = Depends(get_db), current_us
     berths = db.query(models.Berth).all()
 
     if current_user is None:
-        return templates.TemplateResponse("login.html", {"request": request, "message": "Для заказа речного такси нужно войти в аккаунт!"})
+        return templates.TemplateResponse("index.html", {"request": request, "message": "Для заказа речного такси нужно войти в аккаунт!"})
     
-    return templates.TemplateResponse("order.html", {"request": request, "berths": berths})
+    return templates.TemplateResponse("order.html", {"request": request, "berths": berths, "user": '1'})
 
 
 
@@ -161,7 +193,7 @@ async def create_order(request: Request, start_location_id: int = Form(...), end
     db.commit()
     db.refresh(new_order)
 
-    return templates.TemplateResponse("order.html", {"request": request, "order": new_order, "message": f"Заказ успешно создан, ожидайтк."})
+    return templates.TemplateResponse("order.html", {"request": request, "order": new_order, "message": f"Заказ успешно создан, ожидайте."})
 
 @app.get("/api/orders")
 async def get_orders(db: Session = Depends(get_db)):
@@ -176,7 +208,6 @@ async def admin_panel(request: Request, db: Session = Depends(get_db)):
 
 @app.post("/admin/upload")
 async def upload_file(request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    print(f"!!!!!!!!!!!!!!\n{file.filename}\n!!!!!!!!!!!!!!!!!!!!!!!")
     if file.filename == "berths.xlsx":
 
         with open(f"uploaded_files/{file.filename}", "wb") as f:
@@ -190,16 +221,14 @@ async def upload_file(request: Request, file: UploadFile = File(...), db: Sessio
             db.add(berth)
             db.commit()
             db.refresh(berth)
+            
         return templates.TemplateResponse("admin.html", {"request": request, "message": f"File {file.filename} uploaded successfully!"})
     
     try:
         with open(f"uploaded_files/{file.filename}", "wb") as f:
             f.write(file.file.read())
-
-        print("good")
         return templates.TemplateResponse("admin.html", {"request": request, "message": f"File {file.filename} uploaded successfully!"})
     except Exception  as ex:
-        print(ex)
         return templates.TemplateResponse("admin.html", {"request": request, "error": f"File {file.filename} uploaded failed!"})
 
 
@@ -207,4 +236,10 @@ async def upload_file(request: Request, file: UploadFile = File(...), db: Sessio
 @app.get("/logout")
 async def logout(request: Request):
     request.session.clear()
-    return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse("index.html", {"request": request})
+
+# @app.get("/route")
+# def get_route(request: Request):
+#     """Возвращает список координат маршрута."""
+#     data=coordinates_list()
+#     return JSONResponse(content={"coordinates": data})

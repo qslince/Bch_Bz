@@ -1,27 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Вход</title>
+    <link rel="stylesheet" href="static/css/style_login.css">
 </head>
 <body>
-    <h2>Login</h2>
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% elif message %}
-    <p style="color: red;">{{ message }}</p>
-    {% endif %}
+    <header class="main-header">
+        <div class="container">
+            <h1>Речное Такси Москва</h1>
+            <nav>
+                <a href="/">Главная</a>
+                <a href="/#about">О нас</a>
+                <a href="/#contacts">Контакты</a>
+                <a href="/register">Регистрация</a>
+            </nav>
+        </div>
+    </header>
 
-    <form action="/login" method="POST">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username"><br><br>
+    <main class="auth-main">
+        <section class="auth-section">
+            <h2>Вход</h2>
+            {% if error %}
+            <p style="color: red;">{{ error }}</p>
+            {% elif message %}
+            <p style="color: red;">{{ message }}</p>
+            {% endif %}
 
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password"><br><br>
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="username">Имя пользователя:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
 
-        <button type="sign in">Войти</button>
-    </form>
-    <a href="/register"><button>Создать новый аккаунта</button></a>
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <button type="submit" class="cta-button">Войти</button>
+            </form>
+            <p>Нет аккаунта? <a href="/register">Создать новый аккаунт</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2024 Речное Такси Москва</p>
+    </footer>
 </body>
 </html>

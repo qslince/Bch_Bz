@@ -6,6 +6,7 @@
     <title>Заказ речного такси</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="static/css/style_order.css">
     <style>
         #map {
             width: 100%;
@@ -28,29 +29,15 @@
                 setMarker(lat, lng);
             });
         }
+        // fetch('/route')
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         var coordinates = data.coordinates.map(coord => [coord[1], coord[0]]);
+        //         var polyline = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+        //         map.fitBounds(polyline.getBounds());
+        //     });
 
-        async function getRoute() {
-            const response = await fetch('/get_route', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            });
-
-            if (response.ok) {
-                const geojson = await response.json();
-                L.geoJSON(geojson, {
-                    style: function () {
-                        return { color: 'blue', weight: 4 };
-                    }
-                }).addTo(map);
-            } else {
-                alert("Не удалось найти маршрут");
-            }
-        }
-
-        // Пример запроса: маршрут с ID причалов
-        getRoute(["1", "2", "3"]);
+       
 
         async function fetchBerths(inputId, listId, markerType) {
             const query = document.getElementById(inputId).value;
@@ -103,11 +90,7 @@
             map.setView([lng, lat], 13);
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            initMap();
-        });
-
-        document.addEventListener("DOMContentLoaded", getRoute());
+        
 
         
 
@@ -126,13 +109,13 @@
         }
 
         function resetMarkers() {
-            if (markerStart) {
-                map.removeLayer(markerStart);
-                markerStart = null;
+            if (startMarker) {
+                map.removeLayer(startMarker);
+                startMarker = null;
             }
-            if (markerEnd) {
-                map.removeLayer(markerEnd);
-                markerEnd = null;
+            if (endMarker) {
+                map.removeLayer(endMarker);
+                endMarker = null;
             }
             document.getElementById('pickup_lat').value = '';
             document.getElementById('pickup_lng').value = '';
@@ -143,46 +126,57 @@
         document.addEventListener("DOMContentLoaded", function() {
             initMap();
         });
+        document.addEventListener("DOMContentLoaded", getRoute());
     </script>
 </head>
 <body>
-    <form method="POST" action="/order">
+    <header class="main-header">
+        <div class="container">
+            <h1>Речное Такси Москва</h1>
+            <nav>
+                <a href="/">Главная</a>
+                <a href="/#about">О нас</a>
+                <a href="/#contacts">Контакты</a>
+                {% if user %}
+                <a href="/logout">Выйти</a>
+                {% else %}
+                <a href="/login">Войти</a>
+                <a href="/register">Регистрация</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+    <form class="order" method="POST" action="/order">
         <h1>Заказ речного такси</h1>
 
-        <label for="start_location">Выберите причал отправления:</label><br>
+        <label for="start_location">Выберите причал отправления:</label>
         <input type="text" id="start_location" oninput="fetchBerths('start_location', 'start_list', 'start')" placeholder="Введите название причала">
         <input type="hidden" id="start_location_id" name="start_location_id">
-        <select id="start_list" size="5" onchange="selectBerth('start_location', 'start_list', 'start_location_id', 'start')"></select><br><br>
+        <select id="start_list" size="4" onchange="selectBerth('start_location', 'start_list', 'start_location_id', 'start')"></select>
 
-        <label for="end_location">Выберите причал назначения:</label><br>
+        <label for="end_location">Выберите причал назначения:</label>
         <input type="text" id="end_location" oninput="fetchBerths('end_location', 'end_list', 'end')" placeholder="Введите название причала">
         <input type="hidden" id="end_location_id" name="end_location_id">
-        <select id="end_list" size="5" onchange="selectBerth('end_location', 'end_list', 'end_location_id', 'end')"></select><br><br>
-
+        <select id="end_list" size="4" onchange="selectBerth('end_location', 'end_list', 'end_location_id', 'end')"></select>
+        
         <button type="submit">Заказать такси</button>
 
         {% if message %}
-        <p style="color: rgb(0, 0, 0);">{{ message }}</p>
+        <p class="success-message">{{ message }}</p>
         {% endif %}
 
-
         <h2>Или выберите точки на карте</h2>
-        <div id="map"></div><br>
+        <div id="map"></div>
 
-        <label for="pickup_lat">Координаты отправления (широта):</label>
-        <input type="text" id="pickup_lat" name="pickup_lat" readonly><br><br>
-
-        <label for="pickup_lng">Координаты отправления (долгота):</label>
-        <input type="text" id="pickup_lng" name="pickup_lng" readonly><br><br>
-
-        <label for="dropoff_lat">Координаты назначения (широта):</label>
-        <input type="text" id="dropoff_lat" name="dropoff_lat" readonly><br><br>
-
-        <label for="dropoff_lng">Координаты назначения (долгота):</label>
-        <input type="text" id="dropoff_lng" name="dropoff_lng" readonly><br><br>
-
-        <button type="button" onclick="resetMarkers()">Сбросить маркеры</button><br><br>
+        <div class="reset-button">
+            <button type="button" onclick="resetMarkers()">Сбросить маркеры</button>
+        </div>
     </form>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            initMap();
+        });
+    </script>
 </body>
 </html>
