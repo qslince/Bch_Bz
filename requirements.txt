@@ -10,4 +10,10 @@ geopy
 pydantic[email]
 2gis
 fastapi-admin
-
+pandas
+numpy
+ortools
+networkx
+geopy
+shapely
+xml
