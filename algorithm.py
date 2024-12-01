@@ -18,105 +18,80 @@ def create_data_model():
     # Определяем количество узлов как максимальный номер узла +1
     data['num_nodes'] = max(edges['from_node'].max(), edges['to_node'].max()) + 1
     data['num_vehicles'] = 10
-    data['depot'] = 2
+    data['depot'] = 3
     data['pickup_delivery_pairs'] = []
     data['pickup_delivery_pairs'] = []
     for _, order in orders_df.iterrows():
         start_location = order['start_location']
         end_location = order['end_location']
-        
         pickup = all_locations.tolist().index(start_location)
         deliv = all_locations.tolist().index(end_location)
-        
         data['pickup_delivery_pairs'].append([pickup+1, deliv+1])
         
 
 
-    # Инициализируем список demands нулями для всех узлов
     data['demands'] = [0] * data['num_nodes']
 
-    # Назначаем спрос для узлов пикапа и доставки
     for pickup_node, delivery_node in data['pickup_delivery_pairs']:
         data['demands'][pickup_node] = 1    # Узел пикапа: +1
         data['demands'][delivery_node] = -1  # Узел доставки: -1
 
-    # Вместимость каждого транспортного средства
     data['vehicle_capacities'] = [5] * data['num_vehicles']
 
-    # Определяем названия локаций
     data['locations'] = [0] * data['num_nodes']
-    # Добавляем названия для остальных узлов, если они есть
     if data['num_nodes'] > len(data['locations']):
         data['locations'] += [f'Location {i}' for i in range(len(data['locations']), data['num_nodes'])]
 
     return data
 
 def compute_distance_matrix(data):
-    """Вычисляет матрицу кратчайших расстояний между узлами графа с использованием NumPy."""
     num_nodes = data['num_nodes']
     distance_matrix = np.full((num_nodes, num_nodes), np.inf)
-
-    # Заполнение матрицы расстояний на основе рёбер
     for from_node, to_node, weight in data['edges']:
         distance_matrix[from_node, to_node] = weight
         distance_matrix[to_node, from_node] = weight
-    # Установка диагонали в 0
     np.fill_diagonal(distance_matrix, 0)
-
-    # Применение алгоритма Флойда-Уоршелла для вычисления всех кратчайших путей
     for k in range(num_nodes):
         distance_matrix = np.minimum(
             distance_matrix,
             np.add.outer(distance_matrix[:, k], distance_matrix[k, :])
         )
-
-    # Замена бесконечностей на большое число
     distance_matrix[distance_matrix == np.inf] = 999999
     return distance_matrix.astype(int)
 
 def main():
     data = create_data_model()
     data['distance_matrix'] = compute_distance_matrix(data)
-
-    # Создание менеджера индексов маршрутизации
     manager = pywrapcp.RoutingIndexManager(
         len(data['distance_matrix']),
         data['num_vehicles'],
         data['depot']
     )
-
-    # Создание модели маршрутизации
     routing = pywrapcp.RoutingModel(manager)
-
-    # Callback для расчета расстояния между узлами
+    
     def distance_callback(from_index, to_index):
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
         return data['distance_matrix'][from_node][to_node]
-
+        
     transit_callback_index = routing.RegisterTransitCallback(distance_callback)
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
-
-    # Callback для расчета спроса в узлах
     def demand_callback(from_index):
-        """Возвращает требование в узле."""
         from_node = manager.IndexToNode(from_index)
         return data['demands'][from_node]
 
     demand_callback_index = routing.RegisterUnaryTransitCallback(demand_callback)
 
-    # Добавление ограничений по вместимости
     routing.AddDimensionWithVehicleCapacity(
         demand_callback_index,
-        0,  # Нет дополнительного запаса
-        data['vehicle_capacities'],  # Вместимость транспортных средств
-        True,  # Начальные значения коррелируют с узлами депо
+        0, 
+        data['vehicle_capacities'],  
+        True,  
         'Capacity'
     )
 
     capacity_dimension = routing.GetDimensionOrDie('Capacity')
 
-    # Добавление пар подъема и доставки
     for pickup_node, delivery_node in data['pickup_delivery_pairs']:
         pickup_index = manager.NodeToIndex(pickup_node)
         delivery_index = manager.NodeToIndex(delivery_node)
@@ -128,7 +103,6 @@ def main():
             capacity_dimension.CumulVar(pickup_index) <= capacity_dimension.CumulVar(delivery_index)
         )
 
-    # Параметры поиска
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (
 
@@ -139,10 +113,8 @@ def main():
     )
     search_parameters.time_limit.FromSeconds(30)
 
-    # Решение задачи маршрутизации
     solution = routing.SolveWithParameters(search_parameters)
 
-    # Функция для печати решения
     def print_solution(data, manager, routing, solution):
        total_distance = 0
        for vehicle_id in range(data['num_vehicles']):
@@ -167,7 +139,6 @@ def main():
            total_distance += route_distance
        print(f'Общее пройденное расстояние всеми такси: {total_distance} единиц')
 
-    # Печать решения или сообщение об отсутствии решения
     if solution:
         print_solution(data, manager, routing, solution)
     else:
