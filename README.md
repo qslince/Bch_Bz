@@ -4,12 +4,26 @@ This web application was developed based on the case of the Moscow transport gov
 
 # Usage
 
-1. Install the required libraries listed in `requirements.txt` file using `pip`:
+!!! U need python3.10 !!!
+
+
+1. Clone this rep.:
+```
+git clone https://github.com/qslince/Bch_Bz.git
+cd Bch_bz
+git switch test
+```
+2. Setup virtual environments:
+```
+source venv/bin/activate
+```
+
+3. Install the required libraries listed in `requirements.txt` file using `pip`:
 
 ```
 pip install -r requirements.txt
 ```
-2. Run `main.py` to create server.
+4. Run `main.py` to create server.
 
 ```
 uvicorn app.main:app --reload
